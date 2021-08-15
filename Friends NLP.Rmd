@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.height 
 
 ```{r, echo=FALSE}
 # Define variable containing url
-url <- "https://upload.wikimedia.org/wikipedia/commons/b/bc/Friends_logo.svg"
+url <- "https://1000logos.net/wp-content/uploads/2020/12/Friends_logo_PNG2.png"
 ```
 
 <center><img src="`r url`"></center>
@@ -356,6 +356,53 @@ dat_tfidf %>%
   theme_minimal()
 ```
 
+### Wordcloud for Monica with term frequency
+
+```{r}
+dat_tfidf %>% 
+  filter(Character == "monica") %>% 
+  arrange(desc(tf)) %>% 
+  with(wordcloud(words = Word, freq = tf, random.order = F, max.words = 200 ))
+
+
+```
+
+
+## Sentiment Analysis by Episode
+
+```{r}
+dat_word
+library(tidyr)
+
+dat_sentiment <- dat_clean %>%
+  group_by(Season, Episode) %>% 
+  unnest_tokens(output = Word, input = Dialogue, drop = T) %>% 
+  inner_join(get_sentiments("bing"), by = c("Word" = "word")) %>% ### Get sentiments from bing
+  count(Season, Episode, sentiment) %>%
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>% 
+  mutate(sentiment = positive - negative,
+         Season = paste0("Season ", Season)) %>% 
+  group_by(Season) %>% 
+  mutate(Episode = 1:n()) %>% 
+  ungroup()
+
+dat_sentiment
+
+dat_sentiment %>% 
+  ggplot(aes(factor(Episode), sentiment, fill = Season)) +
+  geom_col(show.legend = FALSE) +
+  xlab("Episode") +
+  facet_wrap(~Season, ncol = 2, scales = "free_x") +
+  theme_minimal()
+```
+
+Friends is all about positive vibes. But there are episodes with less of the positive vibes. For example S05E08 where everyone reminisces their worst thanksgiving.   
+
+S09E17 is when Chandler and Ross joke around on their college website, Ross is accused of being dead which leads to the fact that he was not popular in college. Joey is not willing to give his favorite stuffed animal, Hugsy, to Emma. Monica helps Phoebe not call Mike.  
+
+S10E06 is where Ross applies for a palaeontology grant, but discovers that Dr Hobart - who allocates such funding - used to go out with his girlfriend Charlie. Meanwhile, Mike wants Phoebe to get rid of one of her bizarre paintings, but neither Rachel nor Monica is keen to take it, and Chandler lies to Joey about watching his audition tape.
+
+
 
 ```{r, echo=FALSE}
 # Define variable containing url
@@ -363,3 +410,10 @@ url <- "https://upload.wikimedia.org/wikipedia/en/d/d6/Friends_season_one_cast.j
 ```
 
 <center><img src="`r url`"></center>
+
+
+# References
+
+- Silge, Julia, and David Robinson. 2016. “tidytext: Text Mining and Analysis Using Tidy Data Principles in R.” JOSS 1 (3). https://doi.org/10.21105/joss.00037.
+
+- Julia Silge and David Robinson. 2017. [Text Mining with R: A Tidy Approach](https://www.tidytextmining.com/index.html) (1st. ed.). O'Reilly Media, Inc.
