@@ -13,7 +13,6 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.height 
 ```
 
 ```{r, echo=FALSE}
-# Define variable containing url
 url <- "https://1000logos.net/wp-content/uploads/2020/12/Friends_logo_PNG2.png"
 ```
 
@@ -25,7 +24,7 @@ Data is collected from [Kaggle](https://www.kaggle.com/blessondensil294/friends-
 
 # Data Load
 
-We us *purrr* package's *map_dfr*, which is similar to *bind_row*.
+We use *purrr* package's *map_dfr*, which is similar to *bind_row*.
 
 ```{r}
 require(tidyverse)
@@ -329,9 +328,9 @@ dat_word %>%
 
 ### TF-IDF (Term Frequency and Inverse Document Frequency)
 
-This method extracts the word only exclusive to each character.
+This method extracts the word only **exclusive** to each character.
 
-```{r}
+```{r, fig.height= 15}
 dat_tf <- dat_clean %>% 
   filter(Character %in% c("rachel", "joey", "phoebe", "ross", "monica", "chandler")) %>% 
   unnest_tokens(Word, Dialogue, drop = F) %>%
@@ -398,9 +397,11 @@ dat_sentiment %>%
 
 Friends is all about positive vibes. But there are episodes with less of the positive vibes. For example S05E08 where everyone reminisces their worst thanksgiving.   
 
-S09E17 is when Chandler and Ross joke around on their college website, Ross is accused of being dead which leads to the fact that he was not popular in college. Joey is not willing to give his favorite stuffed animal, Hugsy, to Emma. Monica helps Phoebe not call Mike.  
+S09E17 is when Chandler and Ross joke around on their college website, Ross is accused of being dead which leads to the fact that he was not popular in college. Joey is not willing to give his favorite stuffed animal, Hugsy, to Emma. Monica helps Phoebe not calling Mike.  
 
-S10E06 is where Ross applies for a palaeontology grant, but discovers that Dr Hobart - who allocates such funding - used to go out with his girlfriend Charlie. Meanwhile, Mike wants Phoebe to get rid of one of her bizarre paintings, but neither Rachel nor Monica is keen to take it, and Chandler lies to Joey about watching his audition tape.
+S10E06 is where Ross applies for a palaeontology grant, but discovers that Dr Hobart - who allocates such funding - used to go out with his girlfriend Charlie. Meanwhile, Mike wants Phoebe to get rid of one of her bizarre paintings, but neither Rachel nor Monica is keen to take it, and Chandler lies to Joey about watching his audition tape.  
+
+So we can say the low scoring episodes contain some sort of quarrelling among our favourite characters !
 
 
 
