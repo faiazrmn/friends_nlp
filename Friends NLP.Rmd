@@ -40,9 +40,12 @@ dat <- txt_files %>% # map_dfr reads files and bind rows, tsv read tab separated
 ```
 
 
-# Cleaning Data using strings, regexp, joining, merging, trial-error, number formatting...
+# Cleaning Data
 
 ```{r}
+
+# using strings, regexp, joining, merging, trial-error, number formatting...
+
 # Cleaning the Episode Names & Season number
 dat_clean <- dat %>% mutate( episode =  str_split_fixed(source, " ", n = 3), # Separate Folder name, season, episode name by space
                              Season = str_remove(episode[, 2], "^NLP/"), # Delete Folder Name
@@ -89,7 +92,7 @@ dat_clean <- dat %>% mutate( episode =  str_split_fixed(source, " ", n = 3), # S
   select(-source, -X1, -episode, -`Character&Dialogue`) 
 ```
 
-# Clean Tidy Data
+# Tidy Data
 
 ```{r}
 dat_clean %>% head()
@@ -146,7 +149,9 @@ dat_clean %>%
   filter(Character %in% c("rachel", "joey", "phoebe", "ross", "monica", "chandler")) %>% 
   group_by(Season) %>% 
   summarise(n()) %>% 
-  ggplot(aes(x = reorder(Season,`n()`), y = `n()`, fill = Season)) + geom_bar(stat="identity")
+  ggplot(aes(x = reorder(Season,`n()`), y = `n()`, fill = Season)) + 
+  geom_bar(stat="identity") +
+  theme_minimal()
 
 ```
 
@@ -221,7 +226,8 @@ dat_word %>%
   ggplot(aes(n/Total, fill = Character)) +
   geom_histogram(show.legend = FALSE) +
   xlim(NA, 0.0005) +
-  facet_wrap(~Character, ncol = 3, scales = "free_y")
+  facet_wrap(~Character, ncol = 3, scales = "free_y") +
+  theme_minimal()
 ```
 
 As expected. Most common words appear most of the times. It's the words at the right tail that separates the characters from each other.
@@ -402,6 +408,52 @@ S09E17 is when Chandler and Ross joke around on their college website, Ross is a
 S10E06 is where Ross applies for a palaeontology grant, but discovers that Dr Hobart - who allocates such funding - used to go out with his girlfriend Charlie. Meanwhile, Mike wants Phoebe to get rid of one of her bizarre paintings, but neither Rachel nor Monica is keen to take it, and Chandler lies to Joey about watching his audition tape.  
 
 So we can say the low scoring episodes contain some sort of quarrelling among our favourite characters !
+
+### Does Sentiment Drive Rating of the Episode ?
+
+```{r, fig.height=8}
+dat_rating <- read_csv("friends_episodes_v2.csv")
+
+dat_rating <- dat_rating %>% 
+              group_by(Season) %>% 
+              mutate(Episode = 1:n(),
+              Season = paste0("Season 0", Season),
+              Season = ifelse(Season == "Season 010", "Season 10", Season))
+
+dat_sentiment <- dat_sentiment %>% 
+  left_join(dat_rating, 
+  by = c("Season" = "Season", "Episode" = "Episode")
+            ) 
+
+p1 <- dat_sentiment %>%
+  ggplot(aes(sentiment, Stars)) +
+  geom_jitter(aes(color = Season), alpha = 0.8) +
+  geom_smooth(method = 'lm', show.legend = F, se = F) +
+  theme_minimal()
+
+p2 <- dat_sentiment %>%
+  ggplot(aes(sentiment, Stars)) +
+  geom_jitter(aes(color = Season), alpha = 0.8, show.legend = F) +
+  geom_smooth(method = 'lm', show.legend = F, se = F) +
+  theme_minimal() +
+  facet_wrap(~Season)
+
+require(patchwork)
+p1 / p2
+```
+
+Not so much relation between sentiment and episode rating. It's more about the story I think. Season wise there is change in relationship which is interesting !
+
+# Top Rated Episodes
+
+```{r}
+
+DT::datatable ( dat_rating %>% 
+  arrange(desc(Stars)) %>% 
+  select( Season, Episode, Year_of_prod, everything()) %>% 
+  select(-Duration, -Summary, -Director), rownames = F)
+
+```
 
 
 
